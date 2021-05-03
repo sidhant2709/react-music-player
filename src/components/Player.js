@@ -1,4 +1,5 @@
-import React from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlay,
@@ -6,6 +7,7 @@ import {
   faAngleRight,
   faPause,
 } from "@fortawesome/free-solid-svg-icons";
+import { playAudio } from "../utils";
 
 const Player = ({
   currentSong,
@@ -16,7 +18,25 @@ const Player = ({
   songInfo,
   songs,
   setCurrentSong,
+  setSongs,
 }) => {
+  useEffect(() => {
+    const newSongs = songs.map((song) => {
+      if (song.id === currentSong.id) {
+        return {
+          ...song,
+          active: true,
+        };
+      } else {
+        return {
+          ...song,
+          active: false,
+        };
+      }
+    });
+    setSongs(newSongs);
+  }, [currentSong]);
+
   const playSongHandler = () => {
     if (isPlaying) {
       audioRef.current.pause();
@@ -50,19 +70,34 @@ const Player = ({
         setCurrentSong(songs[currentIndex - 1]);
       }
     }
+    playAudio(isPlaying, audioRef);
+  };
+
+  //Add The Styles
+
+  const trackAnim = {
+    transform: `translateX(${songInfo.animationPercentage}%)`,
   };
 
   return (
     <div className="player">
       <div className="time-control">
         <p>{getTime(songInfo.currentTime)}</p>
-        <input
-          min={0}
-          max={songInfo.duration || 0}
-          value={songInfo.currentTime}
-          type="range"
-          onChange={dragHandler}
-        />
+        <div
+          style={{
+            background: `linear-gradient(to right, ${currentSong.color[0]},${currentSong.color[1]})`,
+          }}
+          className="track"
+        >
+          <input
+            min={0}
+            max={songInfo.duration || 0}
+            value={songInfo.currentTime}
+            type="range"
+            onChange={dragHandler}
+          />
+          <div className="animate-track" style={trackAnim}></div>
+        </div>
         <p>{getTime(songInfo.duration || 0)}</p>
       </div>
       <div className="play-control">
